@@ -1,0 +1,9 @@
+version: '3.3'
+services:
+  psql: 
+    image: postgres
+    environment:
+      POSTGRES_USER: alex01
+      POSTGRES_PASSWORD: pwd1234
+    ports:
+      - "54321:5432"
