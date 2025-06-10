@@ -1,13 +1,13 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/gorilla/mux"
+	"github.com/kelseyhightower/envconfig"
+	"github.com/shegai01/timer/internal"
 )
 
 const (
@@ -15,41 +15,39 @@ const (
 	portdb = "54321"
 )
 
-type Timer struct {
-	ID int
-	StartTime time.Time
-	FinishTime time.Duration
-
+type Config struct {
+	Port string
+	DB   struct {
+		DNS string `default:""`
+	}
 }
 
-func (t *Timer) Create() (*Timer,error){
-return &Timer{
-	StartTime: ,
-
-}
-
-}
 func main() {
 	fmt.Println("start timer")
-	connStr := "postgres://:alex:pwd1234@localhost:54321/timer_db"
-	db, err := pgx.Connect(context.Background(), connStr)
-	if err != nil {
-		log.Println("db starting at 54321")
+	var cfg Config
+	if err := envconfig.Process("APP", &cfg); err != nil {
+		log.Println("can't read config file")
 		return
 	}
-	defer db.Close(context.Background())
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
+
+	router := mux.NewRouter()
+
+	tracker, err := internal.NewTimerDB(&cfg)
+	if err != nil {
+		return
+	}
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("hello"))
 	})
-	http.HandleFunc("/starttimer", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
+	router.HandleFunc("/starttimer", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
 
 	})
-	if err := (http.ListenAndServe(":"+port, nil)); err != nil {
+	if err := (http.ListenAndServe(":"+cfg.Port, router)); err != nil {
 		log.Println("error in server")
 		return
 	}
-	log.Printf("server listen at : %s", port)
+	log.Printf("server listen at : %s", cfg.Port)
 
 }

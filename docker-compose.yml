@@ -1,4 +1,4 @@
-version: '3.3'
+version: '3.4'
 services:
   psql: 
     image: postgres
@@ -7,3 +7,10 @@ services:
       POSTGRES_PASSWORD: pwd1234
     ports:
       - "54321:5432"
+    volumes:
+      - type: volume
+        source: mydata
+        target: /mydata
+volumes:
+  mydata: 
+    name: "mydata"
