@@ -10,10 +10,10 @@ import (
 )
 
 const (
-	createTable string = `create table timer(
+	createTable string = `create table if not exists timer(
 		id bigserial primary key,
-		start_time datetime,
-		finish_time datetime, 
+		start_time timestamp,
+		finish_time timestamp
 	);`
 	insertTimer string = `insert into timer( 
 		start_time, finish_time
@@ -21,15 +21,13 @@ const (
 		now(),
 		now()
 	);`
-	selectTimer string = `select (
-		id, start_time, finish_time 
-		) from timer;`
-	delete string = `DELETE FROM timer WHERE id=$1,name=$2`
+	selectTimer string = `select id, start_time, finish_time from timer;`
+	delete      string = `DELETE FROM timer WHERE id=$1,name=$2`
 )
 
 type Timer struct {
-	ID         int       `json:"id"`
-	Name       string    `json:"name"`
+	ID int `json:"id"`
+	// Tittle     string    `json:"tittle"`
 	StartTime  time.Time `json:"start_time"`
 	FinishTime time.Time `json:"finish_time"`
 	// Finished   bool          `json:"finish"`
@@ -63,7 +61,7 @@ func (t *TimerDB) CreateTimer() (*Timer, error) {
 	var time Timer
 	err := t.conn.QueryRow(context.Background(), insertTimer).Scan(
 		&time.ID,
-		&time.Name,
+		// &time.Tittle,
 		&time.StartTime,
 		&time.FinishTime,
 	)
@@ -83,7 +81,7 @@ func (t *TimerDB) ShowAllTimers() ([]Timer, error) {
 	var alltimers []Timer
 	for rows.Next() {
 		var timer Timer
-		err := rows.Scan(&timer.ID, &timer.Name, &timer.StartTime, &timer.FinishTime)
+		err := rows.Scan(&timer.ID, &timer.StartTime, &timer.FinishTime)
 		if err != nil {
 			return nil, err
 		}
