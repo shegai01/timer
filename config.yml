@@ -1,0 +1,4 @@
+app:
+  port: 8080
+db: 
+  dsn: "host=localhost port 54321 dbname=timer user=alex01 password=pwd1234"

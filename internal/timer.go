@@ -22,12 +22,12 @@ const (
 		now()
 	);`
 	selectTimer string = `select id, start_time, finish_time from timer;`
-	delete      string = `DELETE FROM timer WHERE id=$1,name=$2`
+	delete      string = `DELETE FROM timer WHERE id=$1;`
 )
 
 type Timer struct {
-	ID int `json:"id"`
-	// Tittle     string    `json:"tittle"`
+	ID         int       `json:"id"`
+	Tittle     string    `json:"tittle"`
 	StartTime  time.Time `json:"start_time"`
 	FinishTime time.Time `json:"finish_time"`
 	// Finished   bool          `json:"finish"`
@@ -45,23 +45,23 @@ type TimerDB struct {
 func NewTimerDB(cfg string) (*TimerDB, error) {
 	db, err := pgx.Connect(context.Background(), cfg)
 	if err != nil {
-		log.Println("connection failed")
+		log.Printf("connection failed: %s\n", err)
 		return nil, err
 	}
 	_, err = db.Exec(context.Background(), createTable)
 	if err != nil {
-		log.Println(err)
+		log.Println("create table failed", err)
 		return nil, err
 	}
 	return &TimerDB{
 		conn: db,
 	}, nil
 }
-func (t *TimerDB) CreateTimer() (*Timer, error) {
+func (t *TimerDB) CreateTimer(name string) (*Timer, error) {
 	var time Timer
 	err := t.conn.QueryRow(context.Background(), insertTimer).Scan(
 		&time.ID,
-		// &time.Tittle,
+		&time.Tittle,
 		&time.StartTime,
 		&time.FinishTime,
 	)
@@ -69,6 +69,7 @@ func (t *TimerDB) CreateTimer() (*Timer, error) {
 		log.Println("creating failed", err)
 		return nil, err
 	}
+	log.Printf("task created %d", time.ID)
 	return &time, nil
 }
 func (t *TimerDB) ShowAllTimers() ([]Timer, error) {
@@ -90,8 +91,8 @@ func (t *TimerDB) ShowAllTimers() ([]Timer, error) {
 	return alltimers, nil
 }
 
-func (t *TimerDB) DeletebyID(id int, name string) error {
-	_, err := t.conn.Exec(context.Background(), delete, id, name)
+func (t *TimerDB) DeletebyID(id int) error {
+	_, err := t.conn.Exec(context.Background(), delete)
 	if err != nil {
 		fmt.Println("delete failed", err)
 		return err
