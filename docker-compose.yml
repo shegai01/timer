@@ -1,16 +1,29 @@
-version: '3.4'
+version: '3.9'
 services:
   psql: 
     image: postgres
+    container_name: timerdb
     environment:
       POSTGRES_USER: alex01
       POSTGRES_PASSWORD: pwd1234
+      # POSTGRES_DB: timerdb
     ports:
       - "54321:5432"
     volumes:
       - type: volume
         source: mydata
         target: /mydata
+  consul-server:
+    image: hashicorp/consul:1.17.0
+    container_name: consul-server
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp" 
+    command: "agent -server -bootstrap-expect 1 -ui -client=0.0.0.0"
+    volumes:
+      - consul_data:/consul/data
+
 volumes:
   mydata: 
     name: "mydata"
+  consul_data:

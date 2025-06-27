@@ -1,4 +1,4 @@
 app:
-  port: 8080
+  port: "8080"
 db: 
-  dsn: "host=localhost port 54321 dbname=timer user=alex01 password=pwd1234"
+  dsn: "host=localhost port=5432 dbname=timerdb user=alex01 password=pwd1234 sslmod=disable"
