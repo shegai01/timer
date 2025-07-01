@@ -32,7 +32,9 @@ func main() {
 	}
 	timer := handlers.NewTimer(db)
 	router.HandleFunc("/create", timer.CreateTimer)
-	if err := http.ListenAndServe(":8080", router); err != nil {
+	router.HandleFunc("/showalltimers", timer.ShowAllTimersHandler)
+	appPOrt := os.Getenv("app_port")
+	if err := http.ListenAndServe(appPOrt, router); err != nil {
 		log.Fatalln("server not starting")
 	}
 }
