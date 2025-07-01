@@ -7,21 +7,24 @@ import (
 )
 
 const (
-	dbURI       string = "postgres"
 	createTable string = `create table if not exists time_tracker(
 		id bigserial primary key,
-		title varchar(255) not null,
+		tittle varchar(255) not null,
 		start_time timestamp,
 		finish_time timestamp
 	);`
-	insertTimer string = `insert into timerdb (tittle, start_time)
+	insertTimer string = `insert into time_tracker (tittle, start_time)
 		values (
 	 	tittle,
 		now(),
 		now()
 	);`
-	selectTimer string = `select id, start_time, finish_time from timer;`
-	delete      string = `DELETE FROM timer WHERE id=$1;`
+	updateTimer string = `insert into time_tracker (title, start_time, finish_time)
+	values (
+	tittle, start_time, finish_time
+	);`
+	selectTimer string = `select id, start_time, finish_time from time_tracker;`
+	delete      string = `DELETE FROM time_tracker WHERE id=$1;`
 )
 
 // storage db
