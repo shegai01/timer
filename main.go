@@ -1,55 +1,38 @@
 package main
 
 import (
-	"context"
-	"fmt"
 	"log"
 	"net/http"
-	"time"
+	"os"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
+	"github.com/shegai01/timer/internal/handlers"
+	"github.com/shegai01/timer/internal/storage"
 )
 
-const (
-	port   = "8080"
-	portdb = "54321"
-)
-
-type Timer struct {
-	ID int
-	StartTime time.Time
-	FinishTime time.Duration
-
+type Config struct {
+	DatabaseURI string `json:"database_uri"`
 }
 
-func (t *Timer) Create() (*Timer,error){
-return &Timer{
-	StartTime: ,
-
-}
-
-}
 func main() {
-	fmt.Println("start timer")
-	connStr := "postgres://:alex:pwd1234@localhost:54321/timer_db"
-	db, err := pgx.Connect(context.Background(), connStr)
+	err := godotenv.Load()
 	if err != nil {
-		log.Println("db starting at 54321")
+		log.Println("")
 		return
 	}
-	defer db.Close(context.Background())
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
-		w.Write([]byte("hello"))
-	})
-	http.HandleFunc("/starttimer", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
+	databaseuri := os.Getenv("app_database_uri")
 
-	})
-	if err := (http.ListenAndServe(":"+port, nil)); err != nil {
-		log.Println("error in server")
+	router := mux.NewRouter()
+
+	db := storage.NewStorage()
+	if err := db.ConnectDB(databaseuri); err != nil {
+		log.Fatal("connection failed")
 		return
 	}
-	log.Printf("server listen at : %s", port)
-
+	timer := handlers.NewTimer(db)
+	router.HandleFunc("/create", timer.CreateTimer)
+	if err := http.ListenAndServe(":8080", router); err != nil {
+		log.Fatalln("server not starting")
+	}
 }
