@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/shegai01/timer/internal/model"
@@ -24,10 +25,11 @@ func NewTimer(db *storage.Storage) *Timerhandler {
 		storage: db,
 	}
 }
+
 func (h *Timerhandler) CreateTimer(w http.ResponseWriter, r *http.Request) {
 	var timer *model.Timer
-	title := r.URL.Query().Get("title")
-	timer, err := h.storage.CreateTimer(title)
+	tittle := r.URL.Query().Get("tittle")
+	timer, err := h.storage.CreateTimer(tittle)
 	if err != nil {
 		return
 	}
@@ -44,8 +46,7 @@ func (h *Timerhandler) CreateTimer(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Timerhandler) ShowAllTimersHandler(w http.ResponseWriter, r *http.Request) {
-	var allTimers []model.Timer
-	w.WriteHeader(http.StatusOK)
+	var allTimers []*model.Timer
 	initContentType(w)
 	allTimers, err := h.storage.ShowAllTimers()
 	if err != nil {
@@ -59,6 +60,7 @@ func (h *Timerhandler) ShowAllTimersHandler(w http.ResponseWriter, r *http.Reque
 
 		return
 	}
+	w.WriteHeader(http.StatusOK)
 	_, err = w.Write([]byte(timers))
 	if err != nil {
 		http.Error(w, "", http.StatusBadRequest)
@@ -66,6 +68,12 @@ func (h *Timerhandler) ShowAllTimersHandler(w http.ResponseWriter, r *http.Reque
 
 		return
 	}
+	err = os.WriteFile("timer.json", timers, 0666)
+	if err != nil {
+		log.Println("save in file failed")
+		return
+	}
+	log.Println("saved in file timer.json")
 
 }
 
@@ -92,7 +100,7 @@ func (h *Timerhandler) GetTimerbyID(w http.ResponseWriter, r *http.Request) {
 	// id := r.URL.Query()
 	initContentType(w)
 
-	timer, err := h.storage.GetTimerbyID(idTask)
+	timer, err := h.storage.GetTimerbyTittle(idTask)
 	if err != nil {
 		http.Error(w, "delete func failed", http.StatusBadRequest)
 		log.Println(err)

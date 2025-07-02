@@ -1,6 +1,6 @@
-version: '3.3'
+version: '3.9'
 services:
-  psql: 
+  timerdb: 
     image: postgres
     environment:
       POSTGRES_USER: alex01

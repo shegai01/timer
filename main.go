@@ -31,8 +31,10 @@ func main() {
 		return
 	}
 	timer := handlers.NewTimer(db)
-	router.HandleFunc("/create", timer.CreateTimer)
-	router.HandleFunc("/showalltimers", timer.ShowAllTimersHandler)
+	router.HandleFunc("/create", timer.CreateTimer).Methods("POST")
+	router.HandleFunc("/showalltimers", timer.ShowAllTimersHandler).Methods("GET")
+	router.HandleFunc("/gettimerbytittle", timer.GetTimerbyID).Methods("GET")
+	router.HandleFunc("/delete", timer.DeletebyID)
 	appPOrt := os.Getenv("app_port")
 	if err := http.ListenAndServe(appPOrt, router); err != nil {
 		log.Fatalln("server not starting")
