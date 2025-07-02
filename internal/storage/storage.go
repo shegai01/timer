@@ -7,24 +7,35 @@ import (
 )
 
 const (
+	insertTimer string = `insert into time_tracker (tittle, start_time, stop_time)
+		values (
+		$1, now(), now())
+		returning
+		id,
+		tittle,
+		start_time,
+		stop_time,
+		durationS
+	;`
+
 	createTable string = `create table if not exists time_tracker(
 		id bigserial primary key,
 		tittle varchar(255) not null,
 		start_time timestamp,
-		finish_time timestamp
+		stop_time timestamp,
+		duration timestamp
 	);`
-	insertTimer string = `insert into time_tracker (tittle, start_time)
-		values (
-	 	tittle,
-		now(),
-		now()
-	);`
-	updateTimer string = `insert into time_tracker (title, start_time, finish_time)
-	values (
-	tittle, start_time, finish_time
-	);`
-	selectTimer string = `select id, start_time, finish_time from time_tracker;`
-	delete      string = `DELETE FROM time_tracker WHERE id=$1;`
+
+	// updateTimer string = `insert into time_tracker (tittle, start_time, stop_time)
+	// values (
+	// tittle, start_time, stop_time
+	// );`
+
+	selectALLtimer string = `select id, tittle, start_time, stop_time, duration from time_tracker;`
+
+	selectTimer string = `select id, tittle,start_time, stop_time, duration where tittle=$1;`
+
+	delete string = `DELETE FROM time_tracker WHERE id=$1;`
 )
 
 // storage db
@@ -41,19 +52,13 @@ func (t *Storage) ConnectDB(cfg string) error {
 		return err
 	}
 	t.conn = db
+	_, err = t.conn.Exec(context.Background(), createTable)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 func (storage *Storage) CloseDB() error {
 	return storage.conn.Close(context.Background())
 
 }
-
-// func (s *Storage) TrackerTimer() *TimeTrackerRepo {
-// 	if s.trackertimeRepo != nil {
-// 		return s.trackertimeRepo
-// 	}
-// 	s.trackertimeRepo = &TimeTrackerRepo{
-// 		store: s,
-// 	}
-// 	return nil
-// }
