@@ -11,6 +11,7 @@ import (
 func (storage *Storage) CreateListTimer() error {
 	_, err := storage.conn.Exec(context.Background(), createTable)
 	if err != nil {
+		log.Println("create table failed")
 		return err
 	}
 	log.Println("database created", createTable)
@@ -51,8 +52,8 @@ func (storage *Storage) GetTimerbyTittle(tittle string) (*model.Timer, error) {
 func (storage *Storage) ShowAllTimers() ([]*model.Timer, error) {
 	rows, err := storage.conn.Query(context.Background(), selectALLtimer)
 	if err != nil {
-
 		log.Println(err)
+
 		return nil, err
 	}
 	defer rows.Close()
@@ -62,6 +63,7 @@ func (storage *Storage) ShowAllTimers() ([]*model.Timer, error) {
 		timer := &model.Timer{}
 		err := rows.Scan(&timer.ID, &timer.Tittle, &timer.StartTime, &timer.StopTime)
 		if err != nil {
+			log.Println(err) // error
 			return nil, err
 		}
 		timer.Duration = timer.StopTime.Sub(timer.StartTime)
@@ -70,7 +72,7 @@ func (storage *Storage) ShowAllTimers() ([]*model.Timer, error) {
 	return alltimers, nil
 }
 
-func (storage *Storage) DeletebyID(id int) error {
+func (storage *Storage) DeletebyID(tittle string) error {
 	_, err := storage.conn.Exec(context.Background(), delete)
 	if err != nil {
 		log.Println("delete failed", err)

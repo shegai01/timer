@@ -18,7 +18,7 @@ type Config struct {
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Println("")
+		log.Println("databaseURI string not founded")
 		return
 	}
 	databaseuri := os.Getenv("app_database_uri")
@@ -30,13 +30,23 @@ func main() {
 		log.Fatal("connection failed")
 		return
 	}
+	log.Println("connection database successfully")
+
 	timer := handlers.NewTimer(db)
-	router.HandleFunc("/create", timer.CreateTimer).Methods("POST")
+
+	router.HandleFunc("/create", timer.CreateTimer)
 	router.HandleFunc("/showalltimers", timer.ShowAllTimersHandler).Methods("GET")
-	router.HandleFunc("/gettimerbytittle", timer.GetTimerbyID).Methods("GET")
+	router.HandleFunc("/getbytittle", timer.GetTimerbyID).Methods("GET")
 	router.HandleFunc("/delete", timer.DeletebyID)
+	err = godotenv.Load()
+	if err != nil {
+		log.Println("port not founded")
+		return
+	}
 	appPOrt := os.Getenv("app_port")
+
 	if err := http.ListenAndServe(appPOrt, router); err != nil {
 		log.Fatalln("server not starting")
 	}
+	log.Println("timer starting")
 }
