@@ -7,6 +7,13 @@ import (
 )
 
 const (
+	createTable string = `create table if not exists time_tracker(
+		id bigserial primary key,
+		tittle varchar(255) not null,
+		start_time timestamp,
+		stop_time timestamp
+	);`
+
 	insertTimer string = `insert into time_tracker (tittle, start_time, stop_time)
 		values (
 		$1, now(), now())
@@ -14,28 +21,19 @@ const (
 		id,
 		tittle,
 		start_time,
-		stop_time,
-		durationS
+		stop_time
 	;`
-
-	createTable string = `create table if not exists time_tracker(
-		id bigserial primary key,
-		tittle varchar(255) not null,
-		start_time timestamp,
-		stop_time timestamp,
-		duration timestamp
-	);`
 
 	// updateTimer string = `insert into time_tracker (tittle, start_time, stop_time)
 	// values (
 	// tittle, start_time, stop_time
 	// );`
 
-	selectALLtimer string = `select id, tittle, start_time, stop_time, duration from time_tracker;`
+	selectALLtimer string = `select id, tittle, start_time, stop_time from time_tracker;`
 
-	selectTimer string = `select id, tittle,start_time, stop_time, duration where tittle=$1;`
+	selectTimer string = `select id, tittle, start_time, stop_time from time_tracker where tittle=$1;`
 
-	delete string = `DELETE FROM time_tracker WHERE id=$1;`
+	delete string = `select id, tittle, start_time, stop_time from time_tracker where tittle=$1;`
 )
 
 // storage db

@@ -1,4 +1,4 @@
-.phony: run
+.phony: build
 build:
 	go build main.go
 run:
