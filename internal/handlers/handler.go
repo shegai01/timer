@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -33,7 +32,7 @@ func (h *Timerhandler) CreateTimer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Println("timer created")
-	fmt.Println("create timer successfully")
+	// fmt.Println("create timer successfully")
 	initContentType(w)
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(timer); err != nil {
@@ -67,10 +66,15 @@ func (h *Timerhandler) ShowAllTimersHandler(w http.ResponseWriter, r *http.Reque
 
 		return
 	}
+	err = os.WriteFile("timer.json", timers, 0666)
+	if err != nil {
+		log.Println("not saved")
+		return
+	}
 }
 
 func (h *Timerhandler) DeletebyID(w http.ResponseWriter, r *http.Request) {
-	// idTask := r.URL.Query().Get("tittle")
+	// idTask := r.URL.Query().Get("id")
 	tittleTask := r.URL.Query().Get("tittle")
 
 	initContentType(w)
@@ -87,7 +91,7 @@ func (h *Timerhandler) DeletebyID(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	timerDeleted, err := json.MarshalIndent(h.storage.DeletebyID(tittleTask), "", " ")
+	timerDeleted, err := json.MarshalIndent(tittleTask, "", " ")
 	if err != nil {
 		log.Println("not getting for marshalling")
 		return
