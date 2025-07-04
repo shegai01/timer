@@ -24,16 +24,16 @@ const (
 		stop_time
 	;`
 
-	// updateTimer string = `insert into time_tracker (tittle, start_time, stop_time)
-	// values (
-	// tittle, start_time, stop_time
-	// );`
+	updateTimer string = `update into time_tracker (tittle, start_time, stop_time)
+	values (
+	tittle, start_time, stop_time
+	);`
 
 	selectALLtimer string = `select id, tittle, start_time, stop_time from time_tracker;`
 
 	selectTimer string = `select id, tittle, start_time, stop_time from time_tracker where tittle=$1;`
 
-	delete string = `select id, tittle, start_time, stop_time from time_tracker where tittle=$1;`
+	delete string = `delete  from time_tracker where tittle=$1;`
 )
 
 // storage db

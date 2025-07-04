@@ -73,7 +73,7 @@ func (storage *Storage) ShowAllTimers() ([]*model.Timer, error) {
 }
 
 func (storage *Storage) DeletebyID(tittle string) error {
-	_, err := storage.conn.Exec(context.Background(), delete)
+	_, err := storage.conn.Exec(context.Background(), delete, tittle)
 	if err != nil {
 		log.Println("delete failed", err)
 
