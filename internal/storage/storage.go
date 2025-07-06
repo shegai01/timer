@@ -24,10 +24,8 @@ const (
 		stop_time
 	;`
 
-	updateTimer string = `update into time_tracker (tittle, start_time, stop_time)
-	values (
-	tittle, start_time, stop_time
-	);`
+	updateTimer string = `update time_tracker (tittle, stop_time)
+	set tittle = $1, stop_time = $2;`
 
 	selectALLtimer string = `select id, tittle, start_time, stop_time from time_tracker;`
 
