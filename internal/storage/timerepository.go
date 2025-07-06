@@ -81,12 +81,16 @@ func (storage *Storage) DeletebyID(tittle string) error {
 	}
 	return nil
 }
-func (storage *Storage) UpdateTimer(start, stop time.Time, tittle string) (*model.Timer, error) {
+func (storage *Storage) UpdateTimer(tittle string, stop time.Time) (*model.Timer, error) {
 	var timer *model.Timer
 	// duration := timer.StopTime.Sub(timer.StartTime)
-	_, err := storage.conn.Exec(context.Background(), selectTimer, tittle)
+	err := storage.conn.QueryRow(context.Background(), updateTimer, tittle).Scan(
+		&timer.ID,
+		&timer.Tittle,
+		&timer.StartTime,
+		&timer.StopTime)
 	if err != nil {
-		log.Println("updating failed")
+		log.Println("can't creating without tittle")
 		return nil, err
 	}
 	return timer, nil

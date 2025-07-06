@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/shegai01/timer/internal/model"
 	"github.com/shegai01/timer/internal/storage"
@@ -78,7 +79,7 @@ func (h *Timerhandler) DeletebyID(w http.ResponseWriter, r *http.Request) {
 	tittleTask := r.URL.Query().Get("tittle")
 
 	initContentType(w)
-	w.WriteHeader(http.StatusOK)
+	// w.WriteHeader(http.StatusOK)
 	// strID, err := strconv.Atoi(idTask)
 	// if err != nil {
 	// 	http.Error(w, "incorrect input", http.StatusOK)
@@ -108,7 +109,7 @@ func (h *Timerhandler) GetTimerbyID(w http.ResponseWriter, r *http.Request) {
 	tittleTask := r.URL.Query().Get("tittle")
 	// w.Header().Set(contentType, applicationsJson)
 	// id := r.URL.Query()
-	w.WriteHeader(http.StatusOK)
+	// w.WriteHeader(http.StatusOK)
 	initContentType(w)
 
 	timer, err := h.storage.GetTimerbyTittle(tittleTask)
@@ -131,4 +132,21 @@ func (h *Timerhandler) GetTimerbyID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write([]byte(timerbyTittle))
+}
+func (h *Timerhandler) UpdateTimer(w http.ResponseWriter, r *http.Request) {
+	tittle := r.URL.Query().Get("tittle")
+
+	timer, err := h.storage.UpdateTimer(tittle, time.Now())
+	if err != nil {
+		return
+	}
+	timerJson, err := json.MarshalIndent(timer, "", " ")
+	if err != nil {
+		return
+	}
+	err = os.WriteFile("update.json", timerJson, 0666)
+	if err != nil {
+		return
+	}
+
 }
