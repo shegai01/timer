@@ -38,6 +38,8 @@ func main() {
 	router.HandleFunc("/showalltimers", timer.ShowAllTimersHandler).Methods("GET")
 	router.HandleFunc("/getbytittle", timer.GetTimerbyID).Methods("GET")
 	router.HandleFunc("/delete", timer.DeletebyID)
+	router.HandleFunc("/update", timer.UpdateTimer)
+
 	err = godotenv.Load()
 	if err != nil {
 		log.Println("port not founded")
@@ -47,6 +49,6 @@ func main() {
 
 	if err := http.ListenAndServe(appPOrt, router); err != nil {
 		log.Fatalln("server not starting")
+		log.Println("timer starting")
 	}
-	log.Println("timer starting")
 }

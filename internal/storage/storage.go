@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"log"
 
 	"github.com/jackc/pgx/v4"
 )
@@ -24,14 +25,13 @@ const (
 		stop_time
 	;`
 
-	updateTimer string = `update time_tracker (tittle, stop_time)
-	set tittle = $1, stop_time = $2;`
+	updateTimer string = `update time_tracker set stop_time = $2 where tittle = $1 ;`
 
 	selectALLtimer string = `select id, tittle, start_time, stop_time from time_tracker;`
 
 	selectTimer string = `select id, tittle, start_time, stop_time from time_tracker where tittle=$1;`
 
-	delete string = `delete  from time_tracker where tittle=$1;`
+	delete string = `delete from time_tracker where tittle=$1;`
 )
 
 // storage db
@@ -45,13 +45,16 @@ func NewStorage() *Storage {
 func (t *Storage) ConnectDB(cfg string) error {
 	db, err := pgx.Connect(context.Background(), cfg)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	t.conn = db
 	_, err = t.conn.Exec(context.Background(), createTable)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
+	log.Println("it's ok")
 	return nil
 }
 func (storage *Storage) CloseDB() error {

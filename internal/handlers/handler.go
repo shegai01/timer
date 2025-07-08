@@ -138,14 +138,18 @@ func (h *Timerhandler) UpdateTimer(w http.ResponseWriter, r *http.Request) {
 
 	timer, err := h.storage.UpdateTimer(tittle, time.Now())
 	if err != nil {
+		http.Error(w, "update at handler failed", http.StatusBadRequest)
+		log.Println(err)
 		return
 	}
 	timerJson, err := json.MarshalIndent(timer, "", " ")
 	if err != nil {
+		log.Println(err)
 		return
 	}
 	err = os.WriteFile("update.json", timerJson, 0666)
 	if err != nil {
+		log.Println("save in file update.json failed")
 		return
 	}
 
