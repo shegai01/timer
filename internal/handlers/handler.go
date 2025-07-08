@@ -135,7 +135,7 @@ func (h *Timerhandler) GetTimerbyID(w http.ResponseWriter, r *http.Request) {
 }
 func (h *Timerhandler) UpdateTimer(w http.ResponseWriter, r *http.Request) {
 	tittle := r.URL.Query().Get("tittle")
-
+	initContentType(w)
 	timer, err := h.storage.UpdateTimer(tittle, time.Now())
 	if err != nil {
 		http.Error(w, "update at handler failed", http.StatusBadRequest)
@@ -152,5 +152,6 @@ func (h *Timerhandler) UpdateTimer(w http.ResponseWriter, r *http.Request) {
 		log.Println("save in file update.json failed")
 		return
 	}
+	w.Write([]byte(timerJson))
 
 }
