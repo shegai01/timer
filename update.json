@@ -1,7 +1,6 @@
 {
- "id": 0,
- "tittle": "",
- "start_time": "0001-01-01T00:00:00Z",
- "stop_time": "0001-01-01T00:00:00Z",
- "duration": 0
+ "id": 10,
+ "tittle": "first",
+ "start_time": "2025-07-08T15:40:46.021678Z",
+ "stop_time": "2025-07-09T02:10:25.60423Z"
 }

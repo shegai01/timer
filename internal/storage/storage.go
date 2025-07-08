@@ -29,12 +29,11 @@ const (
 
 	selectALLtimer string = `select id, tittle, start_time, stop_time from time_tracker;`
 
-	selectTimer string = `select id, tittle, start_time, stop_time from time_tracker where tittle=$1;`
+	selectTimer string = `select * from time_tracker where tittle=$1;`
 
 	delete string = `delete from time_tracker where tittle=$1;`
 )
 
-// storage db
 type Storage struct {
 	conn *pgx.Conn
 }
