@@ -6,3 +6,4 @@ run:
 PORT=8080
 stop:
 	@fuser -k $(PORT)/tcp
+restart: stop run

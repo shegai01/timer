@@ -66,7 +66,6 @@ func (storage *Storage) ShowAllTimers() ([]*model.Timer, error) {
 			log.Println(err) // error
 			return nil, err
 		}
-		timer.Duration = timer.StopTime.Sub(timer.StartTime)
 		alltimers = append(alltimers, timer)
 	}
 	return alltimers, nil
@@ -81,14 +80,14 @@ func (storage *Storage) DeletebyID(tittle string) error {
 	}
 	return nil
 }
-func (storage *Storage) UpdateTimer(tittle string, stop time.Time) (*model.Timer, error) {
+func (storage *Storage) StopTimerStorage(tittle string, stop time.Time) (*model.Timer, error) {
 	var timer model.Timer
-	// duration := timer.StopTime.Sub(timer.StartTime)
 	_, err := storage.conn.Exec(context.Background(), updateTimer, tittle, stop)
 	if err != nil {
 		log.Println("update failed")
 		return nil, err
 	}
+
 	log.Println("timer updated")
 	return &timer, nil
 }

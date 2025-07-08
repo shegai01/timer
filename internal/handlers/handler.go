@@ -30,6 +30,7 @@ func (h *Timerhandler) CreateTimer(w http.ResponseWriter, r *http.Request) {
 	tittle := r.URL.Query().Get("tittle")
 	timer, err := h.storage.CreateTimer(tittle)
 	if err != nil {
+		log.Println("create timer failed", err)
 		return
 	}
 	log.Println("timer created")
@@ -38,7 +39,17 @@ func (h *Timerhandler) CreateTimer(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(timer); err != nil {
 		http.Error(w, "encoding", http.StatusBadRequest)
-		log.Println("json encoder in 'CreateTimer' failed")
+		log.Println("json encoder in 'CreateTimer' failed", err)
+		return
+	}
+	//trash
+	timerjson, err := json.MarshalIndent(timer, "", " ")
+	if err != nil {
+		return
+	}
+	err = os.WriteFile("timer.json", timerjson, 0666)
+	if err != nil {
+		log.Println("not saved", err)
 		return
 	}
 
@@ -55,30 +66,29 @@ func (h *Timerhandler) ShowAllTimersHandler(w http.ResponseWriter, r *http.Reque
 	timers, err := json.MarshalIndent(allTimers, "", " ")
 	if err != nil {
 		http.Error(w, "", http.StatusBadRequest)
-		log.Println("encoding failed")
+		log.Println("encoding failed", err)
 
 		return
 	}
 	w.WriteHeader(http.StatusOK)
 	_, err = w.Write([]byte(timers))
 	if err != nil {
-		http.Error(w, "", http.StatusBadRequest)
-		log.Println("encoding failed")
+		log.Println("encoding failed", err)
 
 		return
 	}
 	err = os.WriteFile("timer.json", timers, 0666)
 	if err != nil {
-		log.Println("not saved")
+		log.Println("not saved", err)
 		return
 	}
 }
 
 func (h *Timerhandler) DeletebyID(w http.ResponseWriter, r *http.Request) {
-	// idTask := r.URL.Query().Get("id")
 	tittleTask := r.URL.Query().Get("tittle")
 
 	initContentType(w)
+	// idTask := r.URL.Query().Get("id")
 	// w.WriteHeader(http.StatusOK)
 	// strID, err := strconv.Atoi(idTask)
 	// if err != nil {
@@ -88,70 +98,92 @@ func (h *Timerhandler) DeletebyID(w http.ResponseWriter, r *http.Request) {
 	// }
 	if err := h.storage.DeletebyID(tittleTask); err != nil {
 		http.Error(w, "", http.StatusBadRequest)
-		log.Println("can't delete timer")
+		log.Println("can't delete timer", err)
 
 		return
 	}
+
 	timerDeleted, err := json.MarshalIndent(tittleTask, "", " ")
 	if err != nil {
-		log.Println("not getting for marshalling")
+		log.Println("not getting for marshalling", err)
 		return
 	}
+	//trash
 	err = os.WriteFile("deleted.json", timerDeleted, 0666)
 	if err != nil {
-		log.Println("save in file failed")
+		log.Println("save in file failed", err)
 		return
 	}
+
 	log.Println("deleted timers will be save in file timer.json")
 
 }
 func (h *Timerhandler) GetTimerbyID(w http.ResponseWriter, r *http.Request) {
 	tittleTask := r.URL.Query().Get("tittle")
-	// w.Header().Set(contentType, applicationsJson)
-	// id := r.URL.Query()
-	// w.WriteHeader(http.StatusOK)
 	initContentType(w)
 
 	timer, err := h.storage.GetTimerbyTittle(tittleTask)
 	if err != nil {
 		http.Error(w, "get function failed", http.StatusBadRequest)
-		log.Println(err)
+		log.Println("get in function storage failed", err)
 
 		return
 	}
 	timerbyTittle, err := json.MarshalIndent(timer, "", " ")
 	if err != nil {
-		http.Error(w, "", http.StatusBadRequest)
 		log.Println("marshaling failed", err)
+
+		return
+	}
+	//trash
+	err = os.WriteFile("gettimer.json", timerbyTittle, 0666)
+	if err != nil {
+		log.Println("not saved in file gettimer.json", err)
 		return
 	}
 
-	err = os.WriteFile("gettimer.json", timerbyTittle, 0666)
-	if err != nil {
-		log.Println("not saved in file gettimer.json")
-		return
-	}
 	w.Write([]byte(timerbyTittle))
 }
-func (h *Timerhandler) UpdateTimer(w http.ResponseWriter, r *http.Request) {
+func (h *Timerhandler) StopTime(w http.ResponseWriter, r *http.Request) {
 	tittle := r.URL.Query().Get("tittle")
 	initContentType(w)
-	timer, err := h.storage.UpdateTimer(tittle, time.Now())
+	_, err := h.storage.StopTimerStorage(tittle, time.Now())
 	if err != nil {
 		http.Error(w, "update at handler failed", http.StatusBadRequest)
-		log.Println(err)
+		log.Println("stoptimer failed in storage", err)
 		return
 	}
-	timerJson, err := json.MarshalIndent(timer, "", " ")
+	updatetimer, err := h.storage.GetTimerbyTittle(tittle)
+	if err != nil {
+		return
+	}
+
+	timerJson, err := json.MarshalIndent(updatetimer, "", " ")
 	if err != nil {
 		log.Println(err)
 		return
 	}
+	// trash
 	err = os.WriteFile("update.json", timerJson, 0666)
 	if err != nil {
-		log.Println("save in file update.json failed")
+		log.Println("save in file update.json failed", err)
 		return
 	}
 	w.Write([]byte(timerJson))
+
+}
+func (h *Timerhandler) Duration(w http.ResponseWriter, r *http.Request) {
+	tittle := r.URL.Query().Get("tittle")
+	initContentType(w)
+	timer, err := h.storage.GetTimerbyTittle(tittle)
+	if err != nil {
+		return
+	}
+	dur := timer.DurationTimer()
+	timerjson, err := json.MarshalIndent(dur.String(), "", " ")
+	if err != nil {
+		return
+	}
+	w.Write([]byte(timerjson))
 
 }
