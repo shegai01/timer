@@ -142,7 +142,10 @@ func (h *Timerhandler) GetTimerbyID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte(timerbyTittle))
+	_, err = w.Write([]byte(timerbyTittle))
+	if err != nil {
+		return
+	}
 }
 func (h *Timerhandler) StopTime(w http.ResponseWriter, r *http.Request) {
 	tittle := r.URL.Query().Get("tittle")
@@ -169,7 +172,10 @@ func (h *Timerhandler) StopTime(w http.ResponseWriter, r *http.Request) {
 		log.Println("save in file update.json failed", err)
 		return
 	}
-	w.Write([]byte(timerJson))
+	_, err = w.Write([]byte(timerJson))
+	if err != nil {
+		return
+	}
 
 }
 func (h *Timerhandler) Duration(w http.ResponseWriter, r *http.Request) {
@@ -184,6 +190,9 @@ func (h *Timerhandler) Duration(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	w.Write([]byte(timerjson))
+	_, err = w.Write([]byte(timerjson))
+	if err != nil {
+		return
+	}
 
 }
