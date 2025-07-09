@@ -30,7 +30,12 @@ func main() {
 		log.Fatal("connection failed")
 		return
 	}
-	defer db.CloseDB()
+	defer func() {
+		if err := db.CloseDB(); err != nil {
+			return
+		}
+	}()
+
 	log.Println("connection database successfully")
 
 	timer := handlers.NewTimer(db)
