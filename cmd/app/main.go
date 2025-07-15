@@ -18,7 +18,7 @@ type Config struct {
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Println("databaseURI string not founded")
+		log.Printf("godotenv.Load: %s\n", err)
 		return
 	}
 	databaseuri := os.Getenv("app_database_uri")
@@ -26,12 +26,13 @@ func main() {
 	router := mux.NewRouter()
 
 	db := storage.NewStorage()
-	if err := db.ConnectDB(databaseuri); err != nil {
-		log.Fatal("connection failed")
+	if err := db.Connect(databaseuri); err != nil {
+		log.Fatalf("Connect failed: %s\n", err)
 		return
 	}
 	defer func() {
-		if err := db.CloseDB(); err != nil {
+		if err := db.Close(); err != nil {
+
 			return
 		}
 	}()
@@ -40,20 +41,15 @@ func main() {
 
 	timer := handlers.NewTimer(db)
 
-	router.HandleFunc("/create", timer.CreateTimer)
-	router.HandleFunc("/show", timer.ShowAllTimersHandler)
-	router.HandleFunc("/get", timer.GetTimerbyID)
-	router.HandleFunc("/delete", timer.DeletebyID)
-	router.HandleFunc("/stop", timer.StopTime)
-	router.HandleFunc("/duration", timer.Duration)
+	router.HandleFunc("/create", timer.Create)
+	router.HandleFunc("/show", timer.ShowAll)
+	router.HandleFunc("/get", timer.GetbyID)
+	router.HandleFunc("/delete", timer.Delete)
+	router.HandleFunc("/stop", timer.Stop)
 
 	appPOrt := os.Getenv("app_port")
-	// server := &http.Server{
-	// 	Addr:    appPOrt,
-	// 	Handler: router,
-	// }
+
 	if err := http.ListenAndServe(appPOrt, router); err != nil {
-		log.Fatalln("server not starting")
-		log.Println("timer starting")
+		log.Fatalf("ListenAndServe %s\n", err)
 	}
 }

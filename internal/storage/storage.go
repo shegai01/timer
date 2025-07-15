@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"log"
+	"sync"
 
 	"github.com/jackc/pgx/v4"
 )
@@ -10,38 +11,39 @@ import (
 const (
 	createTable string = `create table if not exists time_tracker(
 		id bigserial primary key,
-		tittle varchar(255) not null,
+		title varchar(255) not null,
 		start_time timestamp,
-		stop_time timestamp
+		stop_time omiampty
 	);`
 
-	insertTimer string = `insert into time_tracker (tittle, start_time, stop_time)
+	insertTimer string = `insert into time_tracker (title, start_time, stop_time)
 		values (
 		$1, now(), now())
 		returning
 		id,
-		tittle,
+		title,
 		start_time,
 		stop_time
 	;`
 
-	updateTimer string = `update time_tracker set stop_time = $2 where tittle = $1 ;`
+	updateTimer string = `update time_tracker set stop_time = $2 where id = $1 ;`
 
-	selectALLtimer string = `select id, tittle, start_time, stop_time from time_tracker;`
+	selectALLtimer string = `select id, title, start_time, stop_time from time_tracker;`
 
-	selectTimer string = `select * from time_tracker where tittle=$1;`
+	selectTimer string = `select id, title, start_time, stop_time from time_tracker where id=$1;`
 
-	delete string = `delete from time_tracker where tittle=$1;`
+	delete string = `delete from time_tracker where id=$1;`
 )
 
 type Storage struct {
+	mu   sync.Mutex
 	conn *pgx.Conn
 }
 
 func NewStorage() *Storage {
 	return &Storage{}
 }
-func (t *Storage) ConnectDB(cfg string) error {
+func (t *Storage) Connect(cfg string) error {
 	db, err := pgx.Connect(context.Background(), cfg)
 	if err != nil {
 		log.Println(err)
@@ -56,7 +58,8 @@ func (t *Storage) ConnectDB(cfg string) error {
 	log.Println("it's ok")
 	return nil
 }
-func (storage *Storage) CloseDB() error {
+func (storage *Storage) Close() error {
+	storage.conn = nil
 	return storage.conn.Close(context.Background())
 
 }
