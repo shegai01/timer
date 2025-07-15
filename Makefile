@@ -1,8 +1,8 @@
 .phony: build
 build:
-	go build main.go
+	go build -o bin/app cmd/app/main.go
 run:
-	./main
+	go run -race cmd/app/main.go
 PORT=8080
 stop:
 	@fuser -k $(PORT)/tcp
