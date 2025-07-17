@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -26,19 +27,20 @@ func NewTimer(db *storage.Storage) *Timerhandler {
 
 func (h *Timerhandler) Create(w http.ResponseWriter, r *http.Request) {
 	var timer *model.Timer
-	w.WriteHeader(http.StatusOK)
+	initContentType(w)
 	tittle := r.URL.Query().Get("title")
-	timer, err := h.storage.CreateTimer(tittle)
+	timer, err := h.storage.CreateTimer(r.Context(), tittle)
 	if err != nil {
-		log.Println("create timer failed", err)
+		log.Printf("create: %v", err)
+
 		return
 	}
 	log.Println("timer created")
 
-	initContentType(w)
 	if err := json.NewEncoder(w).Encode(timer); err != nil {
 		http.Error(w, "encoding", http.StatusBadRequest)
 		log.Println("json encoder in 'CreateTimer' failed", err)
+
 		return
 	}
 
@@ -47,11 +49,9 @@ func (h *Timerhandler) Create(w http.ResponseWriter, r *http.Request) {
 func (h *Timerhandler) ShowAll(w http.ResponseWriter, r *http.Request) {
 	var allTimers []*model.Timer
 	initContentType(w)
-	allTimers, err := h.storage.ShowAllTimers()
+	allTimers, err := h.storage.ShowAllTimers(r.Context())
 	if err != nil {
-		http.Error(w, "cant get all timers", http.StatusInternalServerError)
-		log.Println(err)
-
+		http.Error(w, "ShowAll failed", http.StatusInternalServerError)
 		return
 	}
 	timers, err := json.MarshalIndent(allTimers, "", " ")
@@ -80,14 +80,14 @@ func (h *Timerhandler) Delete(w http.ResponseWriter, r *http.Request) {
 		log.Printf("strconv.atoi %s\n", err)
 		return
 	}
-	if err := h.storage.Delete(strID); err != nil {
+	if err := h.storage.Delete(r.Context(), strID); err != nil {
 		http.Error(w, "", http.StatusInternalServerError)
 		log.Printf("h.storage.Delete %s\n", err)
 
 		return
 	}
-	w.WriteHeader(http.StatusOK)
 	log.Println("deleted")
+	w.WriteHeader(http.StatusOK)
 }
 func (h *Timerhandler) GetbyID(w http.ResponseWriter, r *http.Request) {
 
@@ -98,9 +98,9 @@ func (h *Timerhandler) GetbyID(w http.ResponseWriter, r *http.Request) {
 	}
 	initContentType(w)
 
-	timer, err := h.storage.GetTimerbyID(strID)
+	timer, err := h.storage.GetTimerbyID(r.Context(), strID)
 	if err != nil {
-		http.Error(w, "get function failed", http.StatusBadRequest)
+		http.Error(w, "get function failed", http.StatusInternalServerError)
 		log.Println("get in function storage failed", err)
 
 		return
@@ -108,7 +108,7 @@ func (h *Timerhandler) GetbyID(w http.ResponseWriter, r *http.Request) {
 	timerbyTittle, err := json.MarshalIndent(timer, "", " ")
 	if err != nil {
 		log.Println("marshaling failed", err)
-
+		errors.Is(err, &json.MarshalerError{})
 		return
 	}
 
@@ -123,11 +123,11 @@ func (h *Timerhandler) Stop(w http.ResponseWriter, r *http.Request) {
 	idTask := r.URL.Query().Get("id")
 	strID, err := strconv.Atoi(idTask)
 	if err != nil {
-		http.Error(w, "update at handler failed", http.StatusBadRequest)
+		http.Error(w, "stop failed", http.StatusInternalServerError)
 		log.Println("stoptimer failed in storage", err)
 		return
 	}
-	updatetimer, err := h.storage.GetTimerbyID(strID)
+	updatetimer, err := h.storage.GetTimerbyID(r.Context(), strID)
 	if err != nil {
 		return
 	}

@@ -13,24 +13,20 @@ const (
 		id bigserial primary key,
 		title varchar(255) not null,
 		start_time timestamp,
-		stop_time omiampty
+		stop_time timestamp
 	);`
 
-	insertTimer string = `insert into time_tracker (title, start_time, stop_time)
+	insertTimer string = `insert into time_tracker (title, start_time)
 		values (
-		$1, now(), now())
-		returning
-		id,
-		title,
-		start_time,
-		stop_time
+		$1, now())
+		returning id, title, start_time, stop_time
 	;`
 
-	updateTimer string = `update time_tracker set stop_time = $2 where id = $1 ;`
+	stopTimer string = `update time_tracker set stop_time = $2 where id = $1;`
 
-	selectALLtimer string = `select id, title, start_time, stop_time from time_tracker;`
+	showALLtimer string = `select id, title, start_time, stop_time from time_tracker;`
 
-	selectTimer string = `select id, title, start_time, stop_time from time_tracker where id=$1;`
+	getTimer string = `select id, title, start_time, stop_time from time_tracker where id=$1;`
 
 	delete string = `delete from time_tracker where id=$1;`
 )

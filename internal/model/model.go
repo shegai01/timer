@@ -4,9 +4,9 @@ import "time"
 
 type Timer struct {
 	ID        int       `json:"id"`
-	Tittle    string    `json:"tittle"`
+	Title     string    `json:"title"`
 	StartTime time.Time `json:"start_time"`
-	StopTime  time.Time `json:"omiempty"`
+	StopTime  time.Time `json:"stop_time,omitempty"`
 }
 
 func (t *Timer) DurationTimer() time.Duration {
