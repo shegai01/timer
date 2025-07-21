@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -54,7 +58,26 @@ func main() {
 		log.Fatalln("env is missing: APP_PORT")
 	}
 
-	if err := http.ListenAndServe(":"+appPort, router); err != nil {
-		log.Fatalf("ListenAndServe: %s\n", err)
+	server := &http.Server{
+		Addr:    appPort,
+		Handler: router,
 	}
+	var wg sync.WaitGroup
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		if err := server.ListenAndServe(); err != nil || err != http.ErrServerClosed {
+			return
+		}
+	}()
+	<-signalChan
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		return
+	}
+	wg.Wait()
+
 }
