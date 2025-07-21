@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gorilla/mux"
 	"github.com/shegai01/timer/internal/model"
 	"github.com/shegai01/timer/internal/storage"
 )
@@ -14,19 +15,21 @@ func initContentType(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 }
 
-type Timerhandler struct {
+type TimerHandler struct {
+	router  *mux.Router
 	storage *storage.Storage
 }
 
-func NewTimer(db *storage.Storage) *Timerhandler {
-	return &Timerhandler{
+func NewTimerHandler(db *storage.Storage) *TimerHandler {
+	return &TimerHandler{
 		storage: db,
+		router:  mux.NewRouter(),
 	}
 }
 
-func (h *Timerhandler) Create(w http.ResponseWriter, r *http.Request) {
-	var timer *model.Timer
+func (h *TimerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	initContentType(w)
+	var timer *model.Timer
 	tittle := r.URL.Query().Get("title")
 	timer, err := h.storage.CreateTimer(r.Context(), tittle)
 	if err != nil {
@@ -34,8 +37,10 @@ func (h *Timerhandler) Create(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+
 	log.Println("timer created")
 
+	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(timer); err != nil {
 		http.Error(w, "encoding", http.StatusInternalServerError)
 		log.Println("json.NewEncoder().Encode()", err)
@@ -45,7 +50,7 @@ func (h *Timerhandler) Create(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Timerhandler) ShowAll(w http.ResponseWriter, r *http.Request) {
+func (h *TimerHandler) ShowAll(w http.ResponseWriter, r *http.Request) {
 	var allTimers []*model.Timer
 	initContentType(w)
 	allTimers, err := h.storage.ShowAllTimers(r.Context())
@@ -69,10 +74,9 @@ func (h *Timerhandler) ShowAll(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-
 }
 
-func (h *Timerhandler) Delete(w http.ResponseWriter, r *http.Request) {
+func (h *TimerHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	initContentType(w)
 	idTask := r.URL.Query().Get("id")
 	strID, err := strconv.Atoi(idTask)
@@ -82,6 +86,7 @@ func (h *Timerhandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
 	if err := h.storage.Delete(r.Context(), strID); err != nil {
 		http.Error(w, "h.storage.Delete", http.StatusInternalServerError)
 		log.Printf("h.storage.Delete %v\n", err)
@@ -89,10 +94,9 @@ func (h *Timerhandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
 }
 
-func (h *Timerhandler) GetbyID(w http.ResponseWriter, r *http.Request) {
+func (h *TimerHandler) GetbyID(w http.ResponseWriter, r *http.Request) {
 
 	idTask := r.URL.Query().Get("id")
 	strID, err := strconv.Atoi(idTask)
@@ -117,6 +121,7 @@ func (h *Timerhandler) GetbyID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
 	_, err = w.Write([]byte(timerbyTittle))
 	if err != nil {
 		log.Printf("w.Write: %v\n", err)
@@ -124,7 +129,7 @@ func (h *Timerhandler) GetbyID(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
-func (h *Timerhandler) Stop(w http.ResponseWriter, r *http.Request) { //TODO: fix
+func (h *TimerHandler) Stop(w http.ResponseWriter, r *http.Request) { //TODO: fix
 	initContentType(w)
 	idTask := r.URL.Query().Get("id")
 	strID, err := strconv.Atoi(idTask)
@@ -133,13 +138,8 @@ func (h *Timerhandler) Stop(w http.ResponseWriter, r *http.Request) { //TODO: fi
 		log.Printf("strconv.Atoi: %v\n", err)
 		return
 	}
-	updatetimer, err := h.storage.GetTimerByID(r.Context(), strID)
-	if err != nil {
-		log.Printf("h.storage.GetTimerByID: %v\n", err)
 
-		return
-	}
-	timer, err := h.storage.StopTimer(r.Context(), updatetimer.ID)
+	timer, err := h.storage.StopTimer(r.Context(), strID)
 	if err != nil {
 		log.Printf("h.storage.StopTimer: %v\n", err)
 
@@ -151,6 +151,7 @@ func (h *Timerhandler) Stop(w http.ResponseWriter, r *http.Request) { //TODO: fi
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
 	_, err = w.Write([]byte(timerJson))
 	if err != nil {
 		log.Printf("w.Write: %v\n", err)
