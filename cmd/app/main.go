@@ -45,7 +45,7 @@ func main() {
 
 	log.Println("connection to database established successfully")
 
-	timer := handlers.NewTimer(db)
+	timer := handlers.NewTimerHandler(db)
 
 	router.HandleFunc("/create", timer.Create)
 	router.HandleFunc("/show", timer.ShowAll)
@@ -59,25 +59,27 @@ func main() {
 	}
 
 	server := &http.Server{
-		Addr:    appPort,
+		Addr:    ":" + appPort,
 		Handler: router,
 	}
+
 	var wg sync.WaitGroup
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		if err := server.ListenAndServe(); err != nil || err != http.ErrServerClosed {
+		if err := server.ListenAndServe(); err != nil {
 			return
 		}
 	}()
+
 	<-signalChan
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
 		return
 	}
-	wg.Wait()
 
+	wg.Wait()
 }
