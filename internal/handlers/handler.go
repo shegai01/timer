@@ -38,8 +38,6 @@ func (h *TimerHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("timer created")
-
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(timer); err != nil {
 		http.Error(w, "encoding", http.StatusInternalServerError)
