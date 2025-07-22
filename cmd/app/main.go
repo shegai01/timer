@@ -45,13 +45,12 @@ func main() {
 
 	log.Println("connection to database established successfully")
 
-	timer := handlers.NewTimerHandler(db)
-
-	router.HandleFunc("/create", timer.Create)
-	router.HandleFunc("/show", timer.ShowAll)
-	router.HandleFunc("/get", timer.GetbyID)
-	router.HandleFunc("/delete", timer.Delete)
-	router.HandleFunc("/stop", timer.Stop)
+	timer := handlers.NewTimerHandler(db, router)
+	timer.HandleFunc("/create", timer.Create)
+	timer.HandleFunc("/show", timer.ShowAll)
+	timer.HandleFunc("/get", timer.GetbyID)
+	timer.HandleFunc("/delete", timer.Delete)
+	timer.HandleFunc("/stop", timer.Stop)
 
 	appPort := os.Getenv("APP_PORT")
 	if appPort == "" {
@@ -81,5 +80,7 @@ func main() {
 		return
 	}
 
-	wg.Wait()
+	go func() {
+		wg.Wait()
+	}()
 }

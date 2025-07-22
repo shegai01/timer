@@ -16,14 +16,14 @@ func initContentType(w http.ResponseWriter) {
 }
 
 type TimerHandler struct {
-	router  *mux.Router
+	*mux.Router
 	storage *storage.Storage
 }
 
-func NewTimerHandler(db *storage.Storage) *TimerHandler {
+func NewTimerHandler(db *storage.Storage, router *mux.Router) *TimerHandler {
 	return &TimerHandler{
 		storage: db,
-		router:  mux.NewRouter(),
+		Router:  router,
 	}
 }
 
