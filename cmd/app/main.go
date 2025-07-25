@@ -9,7 +9,6 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/shegai01/timer/internal/handlers"
 	"github.com/shegai01/timer/internal/storage"
@@ -30,8 +29,6 @@ func main() {
 		log.Fatalln("env is missing: APP_DATABASE_URI")
 	}
 
-	router := mux.NewRouter()
-
 	db := storage.NewStorage()
 	if err := db.Connect(databaseURI); err != nil {
 		log.Fatalf("db.Connect: %s\n", err)
@@ -45,13 +42,6 @@ func main() {
 
 	log.Println("connection to database established successfully")
 
-	timer := handlers.NewTimerHandler(db, router)
-	timer.HandleFunc("/create", timer.Create)
-	timer.HandleFunc("/show", timer.ShowAll)
-	timer.HandleFunc("/get", timer.GetbyID)
-	timer.HandleFunc("/delete", timer.Delete)
-	timer.HandleFunc("/stop", timer.Stop)
-
 	appPort := os.Getenv("APP_PORT")
 	if appPort == "" {
 		log.Fatalln("env is missing: APP_PORT")
@@ -59,7 +49,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:    ":" + appPort,
-		Handler: router,
+		Handler: handlers.NewTimerHandler(db),
 	}
 
 	var wg sync.WaitGroup
@@ -74,13 +64,10 @@ func main() {
 	}()
 
 	<-signalChan
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	if err := server.Shutdown(ctx); err != nil {
-		return
+
+	if err := server.Shutdown(context.Background()); err != nil {
+		log.Fatalf("server.Shutdown: %v\n", err)
 	}
 
-	go func() {
-		wg.Wait()
-	}()
+	wg.Wait()
 }
