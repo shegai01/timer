@@ -9,3 +9,5 @@ stop:
 restart: stop run
 test:
 	$(shell sh -c "for ((i = 0 ; i < 100 ; i++ )); do curl http://localhost:${PORT}/show > /dev/null &; done")
+lint:
+	golangci-lint run
