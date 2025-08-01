@@ -28,7 +28,8 @@ const (
 
 	getTimer string = `select id, title, start_time, stop_time from time_tracker where id=$1;`
 
-	delete string = `delete from time_tracker where id=$1;`
+	delete  string = `delete from time_tracker where id=$1 returning null;`
+	clearDb string = `delete from time_tracker;`
 )
 
 type Storage struct {
@@ -63,5 +64,16 @@ func (storage *Storage) Close() error {
 		return fmt.Errorf("storage.conn.Close: %w", err)
 	}
 
+	return nil
+}
+
+func (storage *Storage) Drop() error {
+	defer func() {
+		storage.conn = nil
+	}()
+	_, err := storage.conn.Exec(context.Background(), clearDb)
+	if err != nil {
+		return fmt.Errorf("storage.conn.Exec: %v", err)
+	}
 	return nil
 }
