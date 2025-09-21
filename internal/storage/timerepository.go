@@ -88,7 +88,7 @@ func (storage *Storage) Delete(ctx context.Context, id int) error {
 	storage.mu.Lock()
 	defer storage.mu.Unlock()
 
-	_, err := storage.conn.Exec(ctx, delete, id)
+	_, err := storage.conn.Exec(ctx, deleteTimer, id)
 	if err != nil {
 		return fmt.Errorf("storage.conn.Exec: %w", err)
 	}
